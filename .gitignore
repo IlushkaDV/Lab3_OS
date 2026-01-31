@@ -1,0 +1,17 @@
+counter
+counter.exe
+*.out
+*.obj
+*.o
+*.exe
+
+counter_log.txt
+counter_leader.lock
+*.log
+
+Thumbs.db
+.DS_Store
+
+*~
+*.bak
+*.swp
