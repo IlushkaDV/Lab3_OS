@@ -122,4 +122,4 @@ public:
 platform_pid_t start_child_process(const char* mode);
 bool is_process_alive(platform_pid_t pid);
 
-#endif // PLATFORM_H
+#endif 
