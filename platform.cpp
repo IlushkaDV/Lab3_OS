@@ -85,14 +85,13 @@ void log_message(const char* message) {
 
 SharedMemory::SharedMemory() : handle(0), ptr(nullptr), is_owner(false) {
 #ifdef _WIN32
-    // Создаём без префикса Global\ (не требует прав администратора)
     handle = CreateFileMappingA(
         INVALID_HANDLE_VALUE,
         NULL,
         PAGE_READWRITE,
         0,
         sizeof(SharedCounter),
-        SHM_NAME  // "CounterSharedMemory"
+        SHM_NAME  
     );
     
     if (handle == NULL) {
@@ -100,7 +99,6 @@ SharedMemory::SharedMemory() : handle(0), ptr(nullptr), is_owner(false) {
         exit(1);
     }
     
-    // Проверяем, существовал ли объект до этого
     if (GetLastError() == ERROR_ALREADY_EXISTS) {
         is_owner = false;
     } else {
@@ -178,7 +176,7 @@ SharedCounter* SharedMemory::get() {
 
 Mutex::Mutex() : handle(0), is_owner(false) {
 #ifdef _WIN32
-    handle = CreateSemaphoreA(NULL, 1, 1, SEM_NAME);  // "CounterMutex"
+    handle = CreateSemaphoreA(NULL, 1, 1, SEM_NAME); 
     if (handle == NULL) {
         fprintf(stderr, "Ошибка создания семафора: %lu\n", GetLastError());
         exit(1);
@@ -358,17 +356,14 @@ platform_pid_t start_child_process(const char* mode) {
     si.cb = sizeof(si);
     PROCESS_INFORMATION pi = {0};
     
-    // ВАЖНО: используем CREATE_NEW_PROCESS_GROUP чтобы можно было убить процесс по группе
     if (!CreateProcessA(NULL, cmd_line, NULL, NULL, FALSE, 
                        CREATE_NO_WINDOW | CREATE_NEW_PROCESS_GROUP, 
                        NULL, NULL, &si, &pi)) {
         return 0;
     }
     
-    // Возвращаем именно PID (число), а не хендл!
     DWORD pid = pi.dwProcessId;
     
-    // Закрываем хендлы — они нам больше не нужны
     CloseHandle(pi.hThread);
     CloseHandle(pi.hProcess);
     
@@ -390,10 +385,8 @@ bool is_process_alive(platform_pid_t pid) {
     if (pid == 0) return false;
     
 #ifdef _WIN32
-    // Открываем процесс по PID для проверки
     HANDLE hProcess = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, pid);
     if (hProcess == NULL) {
-        // Если не можем открыть — процесс скорее всего завершился
         return false;
     }
     
@@ -404,7 +397,6 @@ bool is_process_alive(platform_pid_t pid) {
     // STILL_ACTIVE = 259
     return (result && exit_code == STILL_ACTIVE);
 #else
-    // Для POSIX: kill(pid, 0) проверяет существование процесса
     return (kill((pid_t)pid, 0) == 0);
 #endif
 }
